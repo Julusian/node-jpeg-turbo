@@ -1,12 +1,10 @@
 #include "exports.h"
-using namespace Nan;
-using namespace v8;
-using namespace node;
+using namespace Napi;
 
 static char errStr[NJT_MSG_LENGTH_MAX] = "No error";
 #define _throw(m) {snprintf(errStr, NJT_MSG_LENGTH_MAX, "%s", m); retval=-1; goto bailout;}
 
-void compressBufferFreeCallback(char *data, void *hint) {
+void compressBufferFreeCallback(Env env, char *data) {
   tjFree((unsigned char*) data);
 }
 
@@ -65,7 +63,7 @@ int compress(unsigned char* srcData, uint32_t format, uint32_t width, uint32_t s
 
 class CompressWorker : public AsyncWorker {
   public:
-    CompressWorker(Callback *callback, unsigned char* srcData, uint32_t format, uint32_t width, uint32_t stride, uint32_t height, uint32_t jpegSubsamp, int quality, int bpp, Local<Object> &dstObject, unsigned char* dstData, uint32_t dstBufferLength) :
+    CompressWorker(Function &callback, unsigned char* srcData, uint32_t format, uint32_t width, uint32_t stride, uint32_t height, uint32_t jpegSubsamp, int quality, int bpp, Object &dstObject, unsigned char* dstData, uint32_t dstBufferLength) :
       AsyncWorker(callback),
       srcData(srcData),
       format(format),
@@ -79,12 +77,12 @@ class CompressWorker : public AsyncWorker {
       dstData(dstData),
       dstBufferLength(dstBufferLength) {
         if (dstBufferLength > 0) {
-          SaveToPersistent("dstObject", dstObject);
+          this->dstObject = Persistent(dstObject);
         }
       }
     ~CompressWorker() {}
 
-    void Execute () {
+    void Execute () override {
       int err;
 
       err = compress(
@@ -101,30 +99,27 @@ class CompressWorker : public AsyncWorker {
           this->dstBufferLength);
 
       if(err != 0) {
-        SetErrorMessage(errStr);
+        SetError(errStr);
       }
     }
 
-    void HandleOKCallback () {
-      Local<Object> obj = New<Object>();
-      Local<Object> dstObject;
+    void OnOK () override {
+      Napi::Env env = Callback().Env();
+
+      Object obj = Object::New(env);
+      Object dstObject;
 
       if (this->dstBufferLength > 0) {
-        dstObject = GetFromPersistent("dstObject").As<Object>();
+        dstObject = this->dstObject.Value();
       }
       else {
-        dstObject = NewBuffer((char*)this->dstData, this->jpegSize, compressBufferFreeCallback, NULL).ToLocalChecked();
+        dstObject = Buffer<char>::New(env, (char*)this->dstData, this->jpegSize, compressBufferFreeCallback);
       }
 
-      Nan::Set(obj, New("data").ToLocalChecked(), dstObject);
-      Nan::Set(obj, New("size").ToLocalChecked(), New((uint32_t) this->jpegSize));
+      obj.Set("data", dstObject);
+      obj.Set("size", this->jpegSize);
 
-      v8::Local<v8::Value> argv[] = {
-        Nan::Null(),
-        obj
-      };
-
-      callback->Call(2, argv, async_resource);
+      Callback().Call({ env.Null(), obj });
     }
 
   private:
@@ -137,45 +132,47 @@ class CompressWorker : public AsyncWorker {
     int quality;
     int bpp;
     unsigned long jpegSize;
+    ObjectReference dstObject;
     unsigned char* dstData;
     uint32_t dstBufferLength;
 };
 
-void compressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
+Value compressParse(const CallbackInfo& info, bool async) {
+  Env env = info.Env();
+
   int retval = 0;
   int cursor = 0;
 
   // Input
-  Callback *callback = NULL;
-  Local<Object> srcObject;
+  Function callback;
+  Object srcObject;
   uint32_t srcBufferLength = 0;
   unsigned char* srcData = NULL;
-  Local<Object> dstObject;
+  Object dstObject;
   uint32_t dstBufferLength = 0;
   unsigned char* dstData = NULL;
-  Local<Object> options;
-  Nan::MaybeLocal<Value> formatObject;
+  Object options;
+  Value formatValue;
   uint32_t format = 0;
-  Nan::MaybeLocal<Value> sampObject;
+  Value sampValue;
   uint32_t jpegSubsamp = NJT_DEFAULT_SUBSAMPLING;
-  Nan::MaybeLocal<Value> widthObject;
+  Value widthValue;
   uint32_t width = 0;
-  Nan::MaybeLocal<Value> heightObject;
+  Value heightValue;
   uint32_t height = 0;
-  Nan::MaybeLocal<Value> strideObject;
+  Value strideValue;
   uint32_t stride;
-  Nan::MaybeLocal<Value> qualityObject;
+  Value qualityValue;
   int quality = NJT_DEFAULT_QUALITY;
   int bpp = 0;
-  Nan::Maybe<uint32_t> tmpMaybe = Nan::Nothing<uint32_t>();
 
   // Output
   unsigned long jpegSize = 0;
 
   // Try to find callback here, so if we want to throw something we can use callback's err
   if (async) {
-    if (info[info.Length() - 1]->IsFunction()) {
-      callback = new Callback(info[info.Length() - 1].As<Function>());
+    if (info[info.Length() - 1].IsFunction()) {
+      callback = info[info.Length() - 1].As<Function>();
     }
     else {
       _throw("Missing callback");
@@ -188,102 +185,96 @@ void compressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
 
   // Input buffer
   srcObject = info[cursor++].As<Object>();
-  if (!Buffer::HasInstance(srcObject)) {
+  if (!srcObject.IsBuffer()) {
     _throw("Invalid source buffer");
   }
-  srcBufferLength = Buffer::Length(srcObject);
-  srcData = (unsigned char*) Buffer::Data(srcObject);
+  srcBufferLength = (uint32_t) srcObject.As<Buffer<char>>().Length();
+  srcData = (unsigned char*) srcObject.As<Buffer<char>>().Data();
 
   // Options
   options = info[cursor++].As<Object>();
 
   // Check if options we just got is actually the destination buffer
   // If it is, pull new object from info and set that as options
-  if (Buffer::HasInstance(options) && info.Length() > cursor) {
+  if (options.IsBuffer() && info.Length() > cursor) {
     dstObject = options;
     options = info[cursor++].As<Object>();
-    dstBufferLength = Buffer::Length(dstObject);
-    dstData = (unsigned char*) Buffer::Data(dstObject);
+    dstBufferLength = (uint32_t) dstObject.As<Buffer<char>>().Length();
+    dstData = (unsigned char*) dstObject.As<Buffer<char>>().Data();
   }
 
-  if (!options->IsObject()) {
+  if (!options.IsObject()) {
     _throw("Options must be an object");
   }
 
   // Format of input buffer
-  formatObject = Get(options, New("format").ToLocalChecked());
-  if (formatObject.IsEmpty() || formatObject.ToLocalChecked()->IsUndefined()) {
+  formatValue = options.Get("format");
+  if (formatValue.IsEmpty() || formatValue.IsUndefined()) {
     _throw("Missing format");
   }
-  tmpMaybe = Nan::To<uint32_t>(formatObject.ToLocalChecked());
-  if (tmpMaybe.IsNothing())
+  if (!isNapiInt(env, formatValue))
   {
     _throw("Invalid input format");
   }
-  format = tmpMaybe.FromJust();
+  format = formatValue.ToNumber();
 
   // Subsampling
-  sampObject = Get(options, New("subsampling").ToLocalChecked());
-  if (!sampObject.IsEmpty() && !sampObject.ToLocalChecked()->IsUndefined())
+  sampValue = options.Get("subsampling");
+  if (!sampValue.IsEmpty() && !sampValue.IsUndefined())
   {
-    tmpMaybe = Nan::To<uint32_t>(sampObject.ToLocalChecked());
-    if (tmpMaybe.IsNothing())
+    if (!isNapiInt(env, sampValue))
     {
       _throw("Invalid subsampling method");
     }
-    jpegSubsamp = tmpMaybe.FromJust();
+    jpegSubsamp = sampValue.ToNumber();
   }
 
   // Width
-  widthObject = Get(options, New("width").ToLocalChecked());
-  if (widthObject.IsEmpty() || widthObject.ToLocalChecked()->IsUndefined())
+  widthValue = options.Get("width");
+  if (widthValue.IsEmpty() || widthValue.IsUndefined())
   {
     _throw("Missing width");
   }
-  tmpMaybe = Nan::To<uint32_t>(widthObject.ToLocalChecked());
-  if (tmpMaybe.IsNothing())
+  if (!isNapiInt(env, widthValue))
   {
     _throw("Invalid width value");
   }
-  width = tmpMaybe.FromJust();
+  width = widthValue.ToNumber();
 
   // Height
-  heightObject = Get(options, New("height").ToLocalChecked());
-  if (heightObject.IsEmpty() || heightObject.ToLocalChecked()->IsUndefined()) {
+  heightValue = options.Get("height");
+  if (heightValue.IsEmpty() || heightValue.IsUndefined()) {
     _throw("Missing height");
   }
-  tmpMaybe = Nan::To<uint32_t>(heightObject.ToLocalChecked());
-  if (tmpMaybe.IsNothing())
+  if (!isNapiInt(env, heightValue))
   {
     _throw("Invalid height value");
   }
-  height = tmpMaybe.FromJust();
+  height = heightValue.ToNumber();
 
   // Stride
-  strideObject = Get(options, New("stride").ToLocalChecked());
-  if (!strideObject.IsEmpty() && !strideObject.ToLocalChecked()->IsUndefined())
+  strideValue = options.Get("stride");
+  if (!strideValue.IsEmpty() && !strideValue.IsUndefined())
   {
-    tmpMaybe = Nan::To<uint32_t>(strideObject.ToLocalChecked());
-    if (tmpMaybe.IsNothing())
+    if (!isNapiInt(env, strideValue))
     {
       _throw("Invalid stride value");
     }
-    stride = tmpMaybe.FromJust();
+    stride = strideValue.ToNumber();
   }
   else {
     stride = width;
   }
 
   // Quality
-  qualityObject = Get(options, New("quality").ToLocalChecked());
-  if (!qualityObject.IsEmpty() && !qualityObject.ToLocalChecked()->IsUndefined())
+  qualityValue = options.Get("quality");
+  if (!qualityValue.IsEmpty() && !qualityValue.IsUndefined())
   {
-    tmpMaybe = Nan::To<uint32_t>(qualityObject.ToLocalChecked());
-    if (tmpMaybe.IsNothing() || tmpMaybe.FromJust() > 100u)
+    if (!isNapiInt(env, qualityValue) || qualityValue.ToNumber().Int32Value() > 100u)
     {
       _throw("Invalid quality value");
     }
-    quality = tmpMaybe.FromJust();
+    quality = qualityValue.ToNumber();
   }
 
   // Figure out bpp from format (needed to calculate output buffer size)
@@ -315,8 +306,9 @@ void compressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
 
   // Do either async or sync compress
   if (async) {
-    AsyncQueueWorker(new CompressWorker(callback, srcData, format, width, stride, height, jpegSubsamp, quality, bpp, dstObject, dstData, dstBufferLength));
-    return;
+    CompressWorker* worker = new CompressWorker(callback, srcData, format, width, stride, height, jpegSubsamp, quality, bpp, dstObject, dstData, dstBufferLength);
+    worker->Queue();
+    return env.Null();
   }
   else {
     retval = compress(
@@ -336,38 +328,30 @@ void compressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
       // Compress will set the errStr
       goto bailout;
     }
-    Local<Object> obj = New<Object>();
+    Object obj = Object::New(env);
     if (dstBufferLength == 0) {
-      dstObject = NewBuffer((char*)dstData, jpegSize, compressBufferFreeCallback, NULL).ToLocalChecked();
+      dstObject = Buffer<char>::New(env, (char*)dstData, jpegSize, compressBufferFreeCallback);
     }
 
-    Nan::Set(obj, New("data").ToLocalChecked(), dstObject);
-    Nan::Set(obj, New("size").ToLocalChecked(), New((uint32_t) jpegSize));
-    info.GetReturnValue().Set(obj);
-    return;
+    obj.Set("data", dstObject);
+    obj.Set("size", jpegSize);
+    return obj;
   }
 
   // If we have error throw error or call callback with error
   bailout:
   if (retval != 0) {
-    if (NULL == callback) {
-      ThrowError(TypeError(errStr));
-    }
-    else {
-      Local<Value> argv[] = {
-        New(errStr).ToLocalChecked()
-      };
-      callback->Call(1, argv, nullptr);
-    }
-    return;
+    TypeError::New(env, errStr).ThrowAsJavaScriptException();
   }
+
+  return env.Null();
 }
 
-NAN_METHOD(CompressSync) {
-  compressParse(info, false);
+Value CompressSync(const CallbackInfo& info) {
+  return compressParse(info, false);
 }
 
-NAN_METHOD(Compress) {
+void Compress(const CallbackInfo& info) {
   compressParse(info, true);
 }
 

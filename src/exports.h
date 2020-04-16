@@ -1,8 +1,9 @@
 #ifndef _NODE_JPEG_TURBO_EXPORTS
 #define _NODE_JPEG_TURBO_EXPORTS
 
-#include <nan.h>
+#include <napi.h>
 #include <turbojpeg.h>
+#include "utils.h"
 
 // Unfortunately Travis still uses Ubuntu 12.04, and their libjpeg-turbo is
 // super old (1.2.0). We still want to build there, but opt in to the new
@@ -39,10 +40,10 @@ enum {
   SAMP_440  = TJSAMP_440,
 };
 
-NAN_METHOD(BufferSize);
-NAN_METHOD(CompressSync);
-NAN_METHOD(Compress);
-NAN_METHOD(DecompressSync);
-NAN_METHOD(Decompress);
+Napi::Number BufferSize(const Napi::CallbackInfo& info);
+Napi::Value CompressSync(const Napi::CallbackInfo& info);
+void Compress(const Napi::CallbackInfo& info);
+Napi::Value DecompressSync(const Napi::CallbackInfo& info);
+void Decompress(const Napi::CallbackInfo& info);
 
 #endif
