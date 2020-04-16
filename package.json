@@ -1,6 +1,6 @@
 {
   "name": "@flowkscai/jpeg-turbo",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Limited libjpeg-turbo bindings for Node.js.",
   "keywords": [
     "jpeg",
