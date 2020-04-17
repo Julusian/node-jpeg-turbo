@@ -22,7 +22,9 @@ execute_process(COMMAND node -p "require('node-addon-api').include"
 string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
 string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
 
-add_compile_definitions(NAPI_VERSION=${napi_build_version})
+if(napi_build_version)
+  add_compile_definitions(NAPI_VERSION=${napi_build_version})
+endif()
 
 set(HEADER_FILES
         "src/exports.h"
