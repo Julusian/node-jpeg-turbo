@@ -1,5 +1,5 @@
 {
-  "name": "@julusian/jpeg-turbo",
+  "name": "@EricomSoftwareLtd/jpeg-turbo",
   "version": "0.5.4",
   "description": "Limited libjpeg-turbo bindings for Node.js.",
   "keywords": [

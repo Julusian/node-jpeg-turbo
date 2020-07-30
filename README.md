@@ -1,4 +1,4 @@
-# @julusian/jpeg-turbo
+# @EricomSoftwareLtd/jpeg-turbo
 
 [![Build Status](https://travis-ci.org/julusian/node-jpeg-turbo.svg?branch=master)](https://travis-ci.org/julusian/node-jpeg-turbo)
 [![npm](https://img.shields.io/npm/v/@julusian/jpeg-turbo.svg)](https://www.npmjs.com/package/@julusian/jpeg-turbo)
@@ -15,7 +15,7 @@ Please ask if you need more methods exposed.
 
 All versions of Node still in [*active* Long-term Support](https://github.com/nodejs/LTS#lts-schedule) and the current development version are supported. Older versions may or may not work; they are not and will not be supported.
 
-We provide prebuilds for some platforms, meaning that you should not have to compile native bindings from source very often. The bindings are hosted at and automatically installed from our [GitHub Releases](https://github.com/julusian/node-jpeg-turbo).
+We provide prebuilds for some platforms, meaning that you should not have to compile native bindings from source very often. The bindings are hosted at and automatically installed from our [GitHub Releases](https://github.com/EricomSoftwareLtd/node-jpeg-turbo).
 
 ### If you must build from source
 
