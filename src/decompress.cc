@@ -1,7 +1,5 @@
 #include "exports.h"
-using namespace Nan;
-using namespace v8;
-using namespace node;
+using namespace Napi;
 
 static char errStr[NJT_MSG_LENGTH_MAX] = "No error";
 #define _throw(m) {snprintf(errStr, NJT_MSG_LENGTH_MAX, "%s", m); retval=-1; goto bailout;}
@@ -80,7 +78,7 @@ int decompress(unsigned char* srcData, uint32_t srcLength, uint32_t format, int*
 
 class DecompressWorker : public AsyncWorker {
   public:
-    DecompressWorker(Callback *callback, unsigned char* srcData, uint32_t srcLength, uint32_t format, Local<Object> &dstObject, unsigned char* dstData, uint32_t dstBufferLength) :
+    DecompressWorker(Function &callback, unsigned char* srcData, uint32_t srcLength, uint32_t format, Object &dstObject, unsigned char* dstData, uint32_t dstBufferLength) :
       AsyncWorker(callback),
       srcData(srcData),
       srcLength(srcLength),
@@ -91,13 +89,13 @@ class DecompressWorker : public AsyncWorker {
       height(0),
       dstLength(0) {
         if (dstBufferLength > 0) {
-          SaveToPersistent("dstObject", dstObject);
+          this->dstObject = Persistent(dstObject);
         }
       }
 
     ~DecompressWorker() {}
 
-    void Execute () {
+    void Execute () override {
       int err;
 
       err = decompress(
@@ -111,33 +109,29 @@ class DecompressWorker : public AsyncWorker {
           this->dstBufferLength);
 
       if(err != 0) {
-        SetErrorMessage(errStr);
+        SetError(errStr);
       }
     }
 
-    void HandleOKCallback () {
-      Local<Object> obj = New<Object>();
-      Local<Object> dstObject;
+    void OnOK () override {
+      Napi::Env env = Callback().Env();
+      Object obj = Object::New(env);
+      Object dstObject;
 
       if (this->dstBufferLength > 0) {
-        dstObject = GetFromPersistent("dstObject").As<Object>();
+        dstObject = this->dstObject.Value();
       }
       else {
-        dstObject = NewBuffer((char*)this->dstData, this->dstLength).ToLocalChecked();
+        dstObject = Buffer<char>::New(env, (char*)this->dstData, this->dstLength);
       }
 
-      Nan::Set(obj, New("data").ToLocalChecked(), dstObject);
-      Nan::Set(obj, New("width").ToLocalChecked(), New(this->width));
-      Nan::Set(obj, New("height").ToLocalChecked(), New(this->height));
-      Nan::Set(obj, New("size").ToLocalChecked(), New(this->dstLength));
-      Nan::Set(obj, New("format").ToLocalChecked(), New(this->format));
+      obj.Set("data", dstObject);
+      obj.Set("width", this->width);
+      obj.Set("height", this->height);
+      obj.Set("size", this->dstLength);
+      obj.Set("format", this->format);
 
-      Local<Value> argv[] = {
-        Null(),
-        obj
-      };
-
-      callback->Call(2, argv, async_resource);
+      Callback().Call({ env.Null(), obj });
     }
 
   private:
@@ -145,6 +139,7 @@ class DecompressWorker : public AsyncWorker {
     uint32_t srcLength;
     uint32_t format;
 
+    ObjectReference dstObject;
     unsigned char* dstData;
     uint32_t dstBufferLength;
     int width;
@@ -152,22 +147,23 @@ class DecompressWorker : public AsyncWorker {
     uint32_t dstLength;
 };
 
-void decompressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
+Value decompressParse(const CallbackInfo& info, bool async) {
+  Env env = info.Env();
+
   int retval = 0;
   int cursor = 0;
 
   // Input
-  Callback *callback = NULL;
-  Local<Object> srcObject;
+  Function callback;
+  Object srcObject;
   unsigned char* srcData = NULL;
   uint32_t srcLength = 0;
-  Local<Object> options;
-  Nan::MaybeLocal<Value> formatObject;
+  Object options;
+  Value formatValue;
   uint32_t format = NJT_DEFAULT_FORMAT;
-  Nan::Maybe<uint32_t> tmpMaybe = Nan::Nothing<uint32_t>();
 
   // Output
-  Local<Object> dstObject;
+  Object dstObject;
   uint32_t dstBufferLength = 0;
   unsigned char* dstData = NULL;
   int width;
@@ -176,8 +172,8 @@ void decompressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
 
   // Try to find callback here, so if we want to throw something we can use callback's err
   if (async) {
-    if (info[info.Length() - 1]->IsFunction()) {
-      callback = new Callback(info[info.Length() - 1].As<Function>());
+    if (info[info.Length() - 1].IsFunction()) {
+      callback = info[info.Length() - 1].As<Function>();
     }
     else {
       _throw("Missing callback");
@@ -190,44 +186,44 @@ void decompressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
 
   // Input buffer
   srcObject = info[cursor++].As<Object>();
-  if (!Buffer::HasInstance(srcObject)) {
+  if (!srcObject.IsBuffer()) {
     _throw("Invalid source buffer");
   }
 
-  srcData = (unsigned char*) Buffer::Data(srcObject);
-  srcLength = Buffer::Length(srcObject);
+  srcData = (unsigned char*) srcObject.As<Buffer<char>>().Data();
+  srcLength = (uint32_t) srcObject.As<Buffer<char>>().Length();
 
   // Options
   options = info[cursor++].As<Object>();
 
   // Check if options we just got is actually the destination buffer
   // If it is, pull new object from info and set that as options
-  if (Buffer::HasInstance(options) && info.Length() > cursor) {
+  if (options.IsBuffer() && info.Length() > cursor) {
     dstObject = options;
     options = info[cursor++].As<Object>();
-    dstBufferLength = Buffer::Length(dstObject);
-    dstData = (unsigned char*) Buffer::Data(dstObject);
+    dstBufferLength = (uint32_t) dstObject.As<Buffer<char>>().Length();
+    dstData = (unsigned char*) dstObject.As<Buffer<char>>().Data();
   }
 
   // Options are optional
-  if (options->IsObject()) {
+  if (options.IsObject()) {
     // Format of output buffer
-    formatObject = Get(options, New("format").ToLocalChecked());
-    if (!formatObject.IsEmpty() && !formatObject.ToLocalChecked()->IsUndefined())
+    formatValue = options.Get("format");
+    if (!formatValue.IsEmpty() && !formatValue.IsUndefined())
     {
-      tmpMaybe = Nan::To<uint32_t>(formatObject.ToLocalChecked());
-      if (tmpMaybe.IsNothing())
+      if (!isNapiInt(env, formatValue))
       {
         _throw("Invalid format");
       }
-      format = tmpMaybe.FromJust();
+      format = formatValue.ToNumber();
     }
   }
 
   // Do either async or sync decompress
   if (async) {
-    AsyncQueueWorker(new DecompressWorker(callback, srcData, srcLength, format, dstObject, dstData, dstBufferLength));
-    return;
+    DecompressWorker* worker = new DecompressWorker(callback, srcData, srcLength, format, dstObject, dstData, dstBufferLength);
+    worker->Queue();
+    return env.Null();
   }
   else {
     retval = decompress(
@@ -245,43 +241,33 @@ void decompressParse(const Nan::FunctionCallbackInfo<Value>& info, bool async) {
       // decompress will set the errStr
       goto bailout;
     }
-    Local<Object> obj = New<Object>();
+    Object obj = Object::New(env);
 
     if (dstBufferLength == 0) {
-      dstObject = NewBuffer((char*)dstData, dstLength).ToLocalChecked();
+      dstObject = Buffer<char>::New(env, (char*)dstData, dstLength);
     }
 
-    Nan::Set(obj, New("data").ToLocalChecked(), dstObject);
-    Nan::Set(obj, New("width").ToLocalChecked(), New(width));
-    Nan::Set(obj, New("height").ToLocalChecked(), New(height));
-    Nan::Set(obj, New("size").ToLocalChecked(), New(dstLength));
-    Nan::Set(obj, New("format").ToLocalChecked(), New(format));
+    obj.Set("data", dstObject);
+    obj.Set("width", width);
+    obj.Set("height", height);
+    obj.Set("size", dstLength);
+    obj.Set("format", format);
 
-    info.GetReturnValue().Set(obj);
-    return;
+    return obj;
   }
 
   // If we have error throw error or call callback with error
   bailout:
   if (retval != 0) {
-    if (NULL == callback) {
-      ThrowError(TypeError(errStr));
-    }
-    else {
-      Local<Value> argv[] = {
-        New(errStr).ToLocalChecked()
-      };
-      callback->Call(1, argv, nullptr);
-    }
-    return;
+    TypeError::New(env, errStr).ThrowAsJavaScriptException();
   }
-
+  return env.Null();
 }
 
-NAN_METHOD(DecompressSync) {
-  decompressParse(info, false);
+Value DecompressSync(const CallbackInfo& info) {
+  return decompressParse(info, false);
 }
 
-NAN_METHOD(Decompress) {
+void Decompress(const CallbackInfo& info) {
   decompressParse(info, true);
 }

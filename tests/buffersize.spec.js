@@ -8,19 +8,24 @@ describe("buffersize", () => {
     expect(() => bufferSize("")).toThrow();
     expect(() => bufferSize({})).toThrow();
 
-    // Maybe these below should throw, but at least they dont crash
-    bufferSize({
-      width: {},
-      height: {}
-    });
-    bufferSize({
-      width: "abc",
-      height: "abc"
-    });
-    bufferSize({
-      width: null,
-      height: null
-    });
+    expect(() =>
+      bufferSize({
+        width: {},
+        height: {}
+      })
+    ).toThrow();
+    expect(() =>
+      bufferSize({
+        width: "abc",
+        height: "abc"
+      })
+    ).toThrow();
+    expect(() =>
+      bufferSize({
+        width: null,
+        height: null
+      })
+    ).toThrow();
   });
 
   test("check result", () => {
@@ -68,22 +73,27 @@ describe("buffersize", () => {
       })
     ).toThrow();
 
-    // Maybe these below should throw, but at least they dont crash
-    bufferSize({
-      width: 10,
-      height: 10,
-      subsampling: "abc"
-    });
-    bufferSize({
-      width: 10,
-      height: 10,
-      subsampling: null
-    });
-    bufferSize({
-      width: 10,
-      height: 10,
-      subsampling: {}
-    });
+    expect(() =>
+      bufferSize({
+        width: 10,
+        height: 10,
+        subsampling: "abc"
+      })
+    ).toThrow();
+    expect(() =>
+      bufferSize({
+        width: 10,
+        height: 10,
+        subsampling: null
+      })
+    ).toThrow();
+    expect(() =>
+      bufferSize({
+        width: 10,
+        height: 10,
+        subsampling: {}
+      })
+    ).toThrow();
   });
 
   test("check result: subsampling", () => {

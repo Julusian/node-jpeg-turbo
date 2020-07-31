@@ -1,8 +1,9 @@
-const { decompressSync, decompress, SAMP_444, FORMAT_BGR, FORMAT_BGRA, FORMAT_GRAY } = require("..");
+const { compress, decompressSync, decompress, FORMAT_BGR, FORMAT_BGRA, FORMAT_GRAY } = require("..");
 const { promisify } = require("util");
 const { readFileSync } = require("fs");
 const path = require("path");
 
+const compress2 = promisify(compress);
 const decompress2 = promisify(decompress);
 
 const sampleJpeg1 = readFileSync(path.join(__dirname, "github_logo.jpg"));
