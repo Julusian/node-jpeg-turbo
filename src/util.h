@@ -1,5 +1,3 @@
-#define NAPI_VERSION 3
-
 #ifndef NODE_JPEGTURBO_UTIL_H
 #define NODE_JPEGTURBO_UTIL_H
 

@@ -1,4 +1,4 @@
-var binding = require('bindings')('jpegturbo.node')
+var binding = require('cmake-js/bindings')(__dirname, require('./binding-options'))
 
 // Copy exports so that we can customize them on the JS side without
 // overwriting the binding itself.

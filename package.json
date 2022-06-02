@@ -14,7 +14,7 @@
   },
   "binary": {
     "napi_versions": [
-      3
+      7
     ]
   },
   "engines": {
@@ -23,22 +23,15 @@
   "main": "./index.js",
   "types": "./module.d.ts",
   "dependencies": {
-    "bindings": "^1.5.0",
-    "cmake-js": "github:cmake-js/cmake-js",
-    "node-addon-api": "^3.2.1",
-    "prebuild-install": "^7.1.0"
+    "cmake-js": "github:cmake-js/cmake-js#feat/prebuilds",
+    "node-addon-api": "^5.0.0"
   },
   "scripts": {
-    "rebuild": "cmake-js compile --target jpegturbo",
-    "install": "prebuild-install -r napi || cmake-js compile --target jpegturbo",
-    "prebuild": "prebuild -r napi --all --verbose --backend cmake-js -- --target jpegturbo",
+    "install": "cmake-js-verify ./binding-options.js || cmake-js compile --target jpeg-turbo",
+    "rebuild": "cmake-js rebuild --target jpeg-turbo",
     "test": "jest"
   },
   "devDependencies": {
-    "jest": "^28.0.3",
-    "prebuild": "^11.0.3"
-  },
-  "resolutions": {
-    "prebuild/cmake-js": "github:cmake-js/cmake-js"
+    "jest": "^28.0.3"
   }
 }

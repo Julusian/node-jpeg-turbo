@@ -1,7 +1,7 @@
-project (jpegturbo)
+project (jpeg-turbo)
 
 # define NPI_VERSION
-add_definitions(-DNAPI_VERSION=3)
+add_definitions(-DNAPI_VERSION=7)
 
 cmake_minimum_required(VERSION 3.9)
 cmake_policy(SET CMP0042 NEW)
