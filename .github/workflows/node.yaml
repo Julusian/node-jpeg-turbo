@@ -62,9 +62,13 @@ jobs:
         run: |
           curl -sL https://rpm.nodesource.com/setup_16.x | bash -
           yum install -y centos-release-scl
-          yum install -y devtoolset-11-gcc-c++ make git python3 nodejs yasm cmake
+          yum install -y devtoolset-11-gcc-c++ make git python3 nodejs yasm wget
           corepack enable
           echo "/opt/rh/devtoolset-11/root/usr/bin" >> $GITHUB_PATH
+
+          wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3-linux-x86_64.tar.gz
+          tar zxvf cmake-3.26.3-linux-x86_64.tar.gz -C /opt
+          echo "/opt/cmake-3.26.3-linux-x86_64" >> $GITHUB_PATH
       - name: Dependencies (Linux musl)
         if: contains(matrix.container, 'alpine')
         run: apk add build-base git python3 cmake bash yasm --update-cache
@@ -112,7 +116,7 @@ jobs:
           fi
 
           yarn rebuild --arch=${{ matrix.arch }}
-          yarn pkg-prebuilds-copy --source build/Release/$BINDING_NAME.node --name=$BINDING_NAME --strip  --napi_version=$NAPI_VERSION --arch=${{ matrix.arch }}
+          yarn pkg-prebuilds-copy --source build/Release/$BINDING_NAME.node --name=$BINDING_NAME --strip --napi_version=$NAPI_VERSION --arch=${{ matrix.arch }} --libc=${{ matrix.libc }}
         env:
           CI: true
           npm_config_build_from_source: true
@@ -137,8 +141,15 @@ jobs:
             then
               curl -sL https://rpm.nodesource.com/setup_16.x | bash -
               yum install -y centos-release-scl
-              yum install -y devtoolset-10-gcc-c++ make git python3 nodejs fontconfig google-noto-sans-fonts
+              yum install -y devtoolset-10-gcc-c++ make git python3 nodejs yasm wget
               export PATH=/opt/rh/devtoolset-10/root/usr/bin:$PATH
+
+              wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz
+              tar zxvf cmake-3.*
+              cd cmake-3.*
+              ./bootstrap --prefix=/usr/local
+              make -j$(nproc)
+              make install
             fi
 
             cd /work
