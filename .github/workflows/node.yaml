@@ -68,7 +68,7 @@ jobs:
 
           wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3-linux-x86_64.tar.gz
           tar zxvf cmake-3.26.3-linux-x86_64.tar.gz -C /opt
-          echo "/opt/cmake-3.26.3-linux-x86_64" >> $GITHUB_PATH
+          echo "/opt/cmake-3.26.3-linux-x86_64/bin" >> $GITHUB_PATH
       - name: Dependencies (Linux musl)
         if: contains(matrix.container, 'alpine')
         run: apk add build-base git python3 cmake bash yasm --update-cache
