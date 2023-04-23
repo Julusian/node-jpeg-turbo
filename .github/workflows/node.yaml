@@ -61,22 +61,16 @@ jobs:
         if: contains(matrix.container, 'centos')
         run: |
           curl -sL https://rpm.nodesource.com/setup_16.x | bash -
-          yum install -y centos-release-scl
-          yum install -y devtoolset-11-gcc-c++ make python3 nodejs yasm wget
+          yum install -y https://repo.ius.io/ius-release-el7.rpm centos-release-scl epel-release
+          yum install -y devtoolset-11-gcc-c++ make python3 nodejs yasm cmake3 git2*-core
           corepack enable
           echo "/opt/rh/devtoolset-11/root/usr/bin" >> $GITHUB_PATH
+          ln -s /usr/bin/cmake3 /usr/bin/cmake
 
-          yum install -y \
-            https://repo.ius.io/ius-release-el7.rpm \
-            https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-          yum install -y git224-core
-
-          wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3-linux-x86_64.tar.gz
-          tar zxvf cmake-3.26.3-linux-x86_64.tar.gz -C /opt
-          echo "/opt/cmake-3.26.3-linux-x86_64/bin" >> $GITHUB_PATH
       - name: Dependencies (Linux musl)
         if: contains(matrix.container, 'alpine')
         run: apk add build-base git python3 cmake bash yasm --update-cache
+
       - name: Dependencies (Ubuntu)
         if: runner.os == 'Linux' && !matrix.container
         run: |
@@ -97,7 +91,6 @@ jobs:
 
       - uses: actions/checkout@v3
       - name: Checkout submodules
-        if: "!contains(matrix.container, 'centos')"
         shell: bash
         run: |
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
@@ -145,16 +138,11 @@ jobs:
             elif command -v yum &> /dev/null
             then
               curl -sL https://rpm.nodesource.com/setup_16.x | bash -
-              yum install -y centos-release-scl
-              yum install -y devtoolset-10-gcc-c++ make git python3 nodejs yasm wget
+              yum install -y https://repo.ius.io/ius-release-el7.rpm centos-release-scl epel-release
+              yum install -y devtoolset-10-gcc-c++ make git python3 nodejs yasm cmake3
               export PATH=/opt/rh/devtoolset-10/root/usr/bin:$PATH
 
-              wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz
-              tar zxvf cmake-3.*
-              cd cmake-3.*
-              ./bootstrap --prefix=/usr/local
-              make -j$(nproc)
-              make install
+              ln -s /usr/bin/cmake3 /usr/bin/cmake
             fi
 
             cd /work
