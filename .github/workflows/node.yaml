@@ -62,9 +62,14 @@ jobs:
         run: |
           curl -sL https://rpm.nodesource.com/setup_16.x | bash -
           yum install -y centos-release-scl
-          yum install -y devtoolset-11-gcc-c++ make git python3 nodejs yasm wget
+          yum install -y devtoolset-11-gcc-c++ make python3 nodejs yasm wget
           corepack enable
           echo "/opt/rh/devtoolset-11/root/usr/bin" >> $GITHUB_PATH
+
+          yum install -y \
+            https://repo.ius.io/ius-release-el7.rpm \
+            https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+          yum install -y git224-core
 
           wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3-linux-x86_64.tar.gz
           tar zxvf cmake-3.26.3-linux-x86_64.tar.gz -C /opt
