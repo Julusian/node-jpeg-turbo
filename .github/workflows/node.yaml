@@ -62,26 +62,17 @@ jobs:
         run: |
           curl -sL https://rpm.nodesource.com/setup_16.x | bash -
           yum install -y centos-release-scl
-          yum install -y devtoolset-11-gcc-c++ make git python3 nodejs fontconfig google-noto-sans-fonts
+          yum install -y devtoolset-11-gcc-c++ make git python3 nodejs yasm cmake
           corepack enable
           echo "/opt/rh/devtoolset-11/root/usr/bin" >> $GITHUB_PATH
       - name: Dependencies (Linux musl)
         if: contains(matrix.container, 'alpine')
-        run: apk add build-base git python3 cmake bash --update-cache
+        run: apk add build-base git python3 cmake bash yasm --update-cache
       - name: Dependencies (Ubuntu)
         if: runner.os == 'Linux' && !matrix.container
         run: |
-          if command -v apt-get &> /dev/null
-            then
           sudo apt-get update
           sudo apt-get install -y yasm
-            elif command -v yum &> /dev/null
-            then
-              curl -sL https://rpm.nodesource.com/setup_16.x | bash -
-              yum install -y centos-release-scl
-              yum install -y devtoolset-10-gcc-c++ make git python3 nodejs yasm
-              export PATH=/opt/rh/devtoolset-10/root/usr/bin:$PATH
-            fi
 
       - name: Dependencies (Windows)
         if: runner.os == 'Windows'
