@@ -2,7 +2,21 @@ cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0091 NEW)
 cmake_policy(SET CMP0042 NEW)
 # cmake_policy(SET CMP0135 NEW)
+
+if (POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 include(ExternalProject)
+
+include("./node_modules/cmake-js/Lib.cmake")
+
+# message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}")
+# message("CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+# message("CMAKEJS_VERSION ${CMAKEJS_VERSION}")
+# message("NODE_RUNTIME ${NODE_RUNTIME}")
+# message("NODE_RUNTIMEVERSION ${NODE_RUNTIMEVERSION}")
+# message("NODE_ARCH ${NODE_ARCH}")
 
 project (jpeg-turbo)
 
@@ -10,9 +24,6 @@ project (jpeg-turbo)
 add_definitions(-DNAPI_VERSION=7)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-include_directories(${CMAKE_JS_INC})
 
 set(HEADER_FILES
   "src/buffersize.h"
@@ -65,22 +76,15 @@ if (MSVC)
   set(JPEG_LIB turbojpeg-static)
 endif()
 
-message("JP ${JPEG_LIB_DIR}")
-
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
+cmake_js_add_node_addon(${PROJECT_NAME}
+  SOURCES ${SOURCE_FILES} ${HEADER_FILES}
+)
 target_include_directories(${PROJECT_NAME} PRIVATE ${JPEG_INCLUDE_DIR})
 target_link_directories(${PROJECT_NAME} PRIVATE ${JPEG_LIB_DIR})
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${JPEG_LIB})
 add_dependencies(${PROJECT_NAME} libjpeg-turbo)
-
-if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
-  # Generate node.lib
-  execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
-endif()
 
 if(UNIX AND NOT APPLE)
   # copy built lib into build dir
