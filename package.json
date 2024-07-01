@@ -36,5 +36,13 @@
   "devDependencies": {
     "jest": "^29.7.0"
   },
+  "files": [
+    "prebuilds",
+    "src",
+    "CMakeLists.txt",
+    "index.js",
+    "binding-options.js",
+    "module.d.ts"
+  ],
   "packageManager": "yarn@4.3.1"
 }
