@@ -63,7 +63,7 @@ jobs:
             extra-copy-args: --extraFiles libturbojpeg.so.0
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Checkout submodules
         shell: bash
         run: |
@@ -90,7 +90,7 @@ jobs:
           brew install yasm
 
       - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
 
@@ -118,7 +118,7 @@ jobs:
           npm_config_build_from_source: true
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         if: matrix.docker-arch
       - name: rebuild (in docker)
         uses: addnab/docker-run-action@v3
@@ -155,7 +155,7 @@ jobs:
               --libc=${{ matrix.libc }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.libc }}-prebuilds
           path: prebuilds
@@ -166,7 +166,7 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: tmp
 
@@ -176,7 +176,7 @@ jobs:
           mv tmp/*/* prebuilds/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: all-prebuilds
           path: prebuilds
