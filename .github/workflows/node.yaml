@@ -132,7 +132,7 @@ jobs:
         if: matrix.docker-arch
       - name: Pre-fetch image
         if: matrix.docker-arch
-        run: docker pull ${{ matrix.docker-image }}
+        run: docker pull ${{ matrix.docker-image }} --platform=${{ matrix.docker-arch }}
       - name: rebuild (in docker)
         uses: addnab/docker-run-action@v3
         if: matrix.docker-arch
