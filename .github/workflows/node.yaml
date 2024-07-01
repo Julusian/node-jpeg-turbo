@@ -105,7 +105,7 @@ jobs:
             yarn test
           fi
 
-          yarn rebuild --arch=${{ matrix.arch }}
+          yarn rebuild -- --arch=${{ matrix.arch }}
           yarn pkg-prebuilds-copy ${{ matrix.extra-copy-args }} \
             --baseDir build/Release \
             --source $BINDING_NAME.node \
