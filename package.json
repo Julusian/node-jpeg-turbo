@@ -35,5 +35,6 @@
   },
   "devDependencies": {
     "jest": "^29.4.2"
-  }
+  },
+  "packageManager": "yarn@4.3.1"
 }

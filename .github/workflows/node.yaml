@@ -98,6 +98,7 @@ jobs:
         if: ${{ !matrix.docker-arch }}
         shell: bash
         run: |
+          corepack enable
           yarn
 
           if [ -n "${{ matrix.is-native }}" ]; then
@@ -139,6 +140,8 @@ jobs:
             fi
 
             cd /work
+
+            corepack enable
 
             yarn
             yarn test
