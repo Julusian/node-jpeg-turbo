@@ -130,7 +130,7 @@ jobs:
           run: |
             if command -v apt-get &> /dev/null
             then
-              echo "deb http://deb.debian.org/debian buster-backports main contrib non-free" | tee -a /etc/apt/sources.list.d/backports.list
+              echo "deb http://archive.debian.org/debian buster-backports main contrib non-free" | tee -a /etc/apt/sources.list.d/backports.list
               apt update
               apt install -y cmake/buster-backports yasm
             elif command -v apk &> /dev/null
