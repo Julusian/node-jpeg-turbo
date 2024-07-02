@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-and-test:
-    name: Build ${{ matrix.arch }} on ${{ matrix.os }} ${{ matrix.libc }}
+    name: Build ${{ matrix.docker-arch || matrix.arch }} on ${{ matrix.docker-image || matrix.container || matrix.os }} ${{ matrix.libc }}
     runs-on: ${{ matrix.os }}
 
     strategy:
