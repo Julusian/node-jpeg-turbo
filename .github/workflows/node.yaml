@@ -196,3 +196,88 @@ jobs:
           name: all-prebuilds
           path: prebuilds
           retention-days: 7
+
+  publish:
+    name: Publish to npm
+    needs: bundle
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    # only run for tags
+    if: contains(github.ref, 'refs/tags/')
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - name: Check release is desired
+        id: do-publish
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "No Token"
+          else
+
+            corepack enable
+
+            PUBLISHED_VERSION=$(yarn npm info --json . | jq -c '.version' -r)
+            THIS_VERSION=$(node -p "require('./package.json').version")
+            # Simple bash helper to comapre version numbers
+            verlte() {
+              [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+            }
+            verlt() {
+              [ "$1" = "$2" ] && return 1 || verlte $1 $2
+            }
+            if verlt $PUBLISHED_VERSION $THIS_VERSION
+            then
+              echo "Publishing latest"
+              echo "tag=latest" >> $GITHUB_OUTPUT
+            else
+              echo "Publishing hotfix"
+              echo "tag=hotfix" >> $GITHUB_OUTPUT
+            fi
+
+          fi
+
+      - name: Install Linux dependencies
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yasm
+      - name: Prepare build
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          corepack enable
+          yarn install
+        env:
+          CI: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: all-prebuilds
+          path: prebuilds
+      - name: Publish to NPM
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          npm set "//registry.npmjs.org/:_authToken" "$NPM_AUTH_TOKEN"
+
+          npm publish --access=public --tag ${{ steps.do-publish.outputs.tag }} --provenance
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "**Published:** $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CI: true
