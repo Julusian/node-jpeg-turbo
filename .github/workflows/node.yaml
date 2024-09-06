@@ -2,8 +2,16 @@ name: Prebuild
 
 on:
   push:
-    # tags:
-    #   - v*
+    tags:
+      - v*
+    branches-ignore:
+      - "release-please-*"
+  pull_request:
+    paths-ignore:
+      # ingore release-please prs
+      - CHANGELOG.md
+      - package.json
+      - .release-please-manifest.json
 
 env:
   NAPI_VERSION: 7
