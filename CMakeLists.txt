@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0091 NEW)
 cmake_policy(SET CMP0042 NEW)
-# cmake_policy(SET CMP0135 NEW)
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW) # DOWNLOAD_EXTRACT_TIMESTAMP
+endif()
 include(ExternalProject)
 
 project (jpeg-turbo)
@@ -50,7 +52,6 @@ ExternalProject_Add(libjpeg-turbo
   URL_HASH SHA256=${libjpeg-turbo_sha256}
   CMAKE_ARGS -DENABLE_SHARED=${ENABLE_SHARED} -DENABLE_STATIC=${ENABLE_STATIC} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
   INSTALL_COMMAND ""
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 ExternalProject_Get_Property(libjpeg-turbo SOURCE_DIR)
 set(JPEG_INCLUDE_DIR ${SOURCE_DIR}/src)
