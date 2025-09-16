@@ -54,7 +54,7 @@ jobs:
           # linux-libc
           - os: ubuntu-24.04-arm
             arch: arm64
-            is-native: false
+            is-native: true
             docker-arch: linux/arm64
             docker-image: node:18-buster
             extra-copy-args: --extraFiles libturbojpeg.so.0
