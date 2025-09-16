@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/Julusian/node-jpeg-turbo/compare/v2.2.0...v2.3.0) (2025-09-16)
+
+
+### Features
+
+* update libjpeg-turbo to v3.1.2 ([ff5d104](https://github.com/Julusian/node-jpeg-turbo/commit/ff5d104cb23ff0be58998e302a20367b5dcb351f))
+
+
+### Bug Fixes
+
+* Use sha256 for the hash verification of the libjpeg-turbo tarball ([#30](https://github.com/Julusian/node-jpeg-turbo/issues/30)) ([d84af01](https://github.com/Julusian/node-jpeg-turbo/commit/d84af01684bc28dc7f3fe47459cd88e29d3bad51))
+
 ## [2.2.0](https://github.com/Julusian/node-jpeg-turbo/compare/v2.1.0...v2.2.0) (2024-09-06)
 
 
