@@ -14,26 +14,24 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(${CMAKE_JS_INC})
 
-set(HEADER_FILES
-  "src/buffersize.h"
-  "src/compress.h"
-  "src/consts.h"
-  "src/decompress.h"
-  "src/enums.h"
-  "src/util.h"
-)
 set(SOURCE_FILES
   "src/buffersize.cc"
+  "src/buffersize.h"
   "src/compress.cc"
+  "src/compress.h"
   "src/decompress.cc"
+  "src/decompress.h"
   "src/enums.cc"
+  "src/enums.h"
   "src/util.cc"
+  "src/util.h"
   "src/exports.cc"
+  "src/consts.h"
 )
 
-set(libjpeg-turbo_version "3.0.1")
-set(libjpeg-turbo_url "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/${libjpeg-turbo_version}.tar.gz")
-set(libjpeg-turbo_sha256 "5b9bbca2b2a87c6632c821799438d358e27004ab528abf798533c15d50b39f82")
+set(libjpeg-turbo_version "3.1.2")
+set(libjpeg-turbo_url "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${libjpeg-turbo_version}/libjpeg-turbo-${libjpeg-turbo_version}.tar.gz")
+set(libjpeg-turbo_sha256 "8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf")
 
 if(UNIX AND NOT APPLE)
   # build shared on linux, to avoid conflicts with libjpeg built into electron
@@ -52,9 +50,10 @@ ExternalProject_Add(libjpeg-turbo
   URL_HASH SHA256=${libjpeg-turbo_sha256}
   CMAKE_ARGS -DENABLE_SHARED=${ENABLE_SHARED} -DENABLE_STATIC=${ENABLE_STATIC} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
   INSTALL_COMMAND ""
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 ExternalProject_Get_Property(libjpeg-turbo SOURCE_DIR)
-set(JPEG_INCLUDE_DIR ${SOURCE_DIR})
+set(JPEG_INCLUDE_DIR ${SOURCE_DIR}/src)
 ExternalProject_Get_Property(libjpeg-turbo BINARY_DIR)
 set(JPEG_LIB_DIR ${BINARY_DIR})
 set(JPEG_LIB turbojpeg)
@@ -65,12 +64,11 @@ if (MSVC)
   set(JPEG_LIB turbojpeg-static)
 endif()
 
-message("JP ${JPEG_LIB_DIR}")
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ${CMAKE_JS_SRC})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${CMAKE_JS_SRC})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_include_directories(${PROJECT_NAME} PRIVATE ${JPEG_INCLUDE_DIR})
 target_link_directories(${PROJECT_NAME} PRIVATE ${JPEG_LIB_DIR})
