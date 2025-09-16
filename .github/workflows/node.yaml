@@ -52,13 +52,13 @@ jobs:
             docker-image: node:18-buster
             extra-copy-args: --extraFiles libturbojpeg.so.0
           # linux-libc
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
             arch: arm64
             is-native: false
             docker-arch: linux/arm64
             docker-image: node:18-buster
             extra-copy-args: --extraFiles libturbojpeg.so.0
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
             arch: arm
             is-native: false
             docker-arch: linux/arm/v7
