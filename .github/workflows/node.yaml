@@ -20,7 +20,7 @@ env:
 
 jobs:
   build-and-test:
-    name: Build ${{ matrix.docker-arch || matrix.arch }} on ${{ matrix.docker-image || matrix.container || matrix.os }} ${{ matrix.libc }}
+    name: Build ${{ matrix.docker-arch || matrix.arch }} on ${{ matrix.docker-image || matrix.os }} ${{ matrix.libc }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -40,10 +40,10 @@ jobs:
           # macos
           - os: macos-latest
             arch: arm64
-            is-native: false
+            is-native: true
           - os: macos-latest
             arch: x64
-            is-native: true
+            is-native: false
           # linux
           - os: ubuntu-latest
             arch: x64
