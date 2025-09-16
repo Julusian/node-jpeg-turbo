@@ -33,7 +33,7 @@ set(SOURCE_FILES
 
 set(libjpeg-turbo_version "3.0.1")
 set(libjpeg-turbo_url "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/${libjpeg-turbo_version}.tar.gz")
-set(libjpeg-turbo_md5 "88a0b4f9ad57924ce064135a1717c703")
+set(libjpeg-turbo_sha256 "5b9bbca2b2a87c6632c821799438d358e27004ab528abf798533c15d50b39f82")
 
 if(UNIX AND NOT APPLE)
   # build shared on linux, to avoid conflicts with libjpeg built into electron
@@ -49,7 +49,7 @@ endif()
 # Download and build libjpeg-turbo
 ExternalProject_Add(libjpeg-turbo
   URL ${libjpeg-turbo_url}
-  URL_MD5 ${libjpeg-turbo_md5}
+  URL_HASH SHA256=${libjpeg-turbo_sha256}
   CMAKE_ARGS -DENABLE_SHARED=${ENABLE_SHARED} -DENABLE_STATIC=${ENABLE_STATIC} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
   INSTALL_COMMAND ""
 )
