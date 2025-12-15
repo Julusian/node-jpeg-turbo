@@ -74,7 +74,7 @@ jobs:
             extra-copy-args: --extraFiles libturbojpeg.so.0
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Checkout submodules
         shell: bash
         run: |
@@ -216,7 +216,7 @@ jobs:
     if: contains(github.ref, 'refs/tags/')
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Checkout submodules
