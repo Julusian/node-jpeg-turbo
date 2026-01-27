@@ -82,7 +82,7 @@ jobs:
         run: |
           curl -o nasm.zip "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip"
           unzip nasm.zip
-          echo "$PWD/nasm-2.16.03/nasm.exe" >> $GITHUB_PATH
+          echo "$PWD/nasm-2.16.03/" >> $GITHUB_PATH
 
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
