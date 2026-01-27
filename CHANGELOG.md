@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/Julusian/node-jpeg-turbo/compare/v3.0.0...v3.0.1) (2026-01-27)
+
+
+### Bug Fixes
+
+* npm publish ([4e3cd2f](https://github.com/Julusian/node-jpeg-turbo/commit/4e3cd2f0fc8ba653d67120a37062de0db8675583))
+
 ## [3.0.0](https://github.com/Julusian/node-jpeg-turbo/compare/v2.3.0...v3.0.0) (2026-01-27)
 
 
