@@ -31,9 +31,9 @@ set(SOURCE_FILES
   "src/consts.h"
 )
 
-set(libjpeg-turbo_version "3.1.2")
+set(libjpeg-turbo_version "3.1.3")
 set(libjpeg-turbo_url "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${libjpeg-turbo_version}/libjpeg-turbo-${libjpeg-turbo_version}.tar.gz")
-set(libjpeg-turbo_sha256 "8f0012234b464ce50890c490f18194f913a7b1f4e6a03d6644179fa0f867d0cf")
+set(libjpeg-turbo_sha256 "075920b826834ac4ddf97661cc73491047855859affd671d52079c6867c1c6c0")
 
 if(UNIX AND NOT APPLE)
   # build shared on linux, to avoid conflicts with libjpeg built into electron
