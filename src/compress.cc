@@ -231,7 +231,7 @@ Napi::Value CompressInner(const Napi::CallbackInfo &info, bool async)
     return env.Null();
   }
 
-  if (srcBuffer.Length() < props.stride * props.height * props.bpp)
+  if (srcBuffer.Length() < static_cast<size_t>(props.stride) * props.height * props.bpp)
   {
     Napi::TypeError::New(env, "Source data is not long enough").ThrowAsJavaScriptException();
     return env.Null();

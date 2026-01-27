@@ -196,7 +196,7 @@ Napi::Value DecompressInner(const Napi::CallbackInfo &info, bool async)
     return env.Null();
   }
 
-  auto targetSize = props.resWidth * props.resHeight * props.bpp;
+  auto targetSize = static_cast<size_t>(props.resWidth) * props.resHeight * props.bpp;
   if (dstBuffer.IsEmpty())
   {
     dstBuffer = Napi::Buffer<unsigned char>::New(env, targetSize);
