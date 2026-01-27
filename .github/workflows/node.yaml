@@ -141,17 +141,16 @@ jobs:
           run: |
             if command -v apt-get &> /dev/null
             then
-              # rewrite bullseye sources to archive mirrors
-              sed -i -E 's#https?://(deb|deb.debian).debian.org/debian#http://archive.debian.org/debian#g' /etc/apt/sources.list || true
-              sed -i -E 's#https?://security.debian.org#http://archive.debian.org/debian-security#g' /etc/apt/sources.list || true
+              # # rewrite bullseye sources to archive mirrors
+              # sed -i -E 's#https?://(deb|deb.debian).debian.org/debian#http://archive.debian.org/debian#g' /etc/apt/sources.list || true
+              # sed -i -E 's#https?://security.debian.org#http://archive.debian.org/debian-security#g' /etc/apt/sources.list || true
 
-              echo "deb http://archive.debian.org/debian bullseye-backports main contrib non-free" | tee -a /etc/apt/sources.list.d/backports.list
               apt-get update
-              apt-get install -y cmake/bullseye-backports yasm
+              apt-get install -y cmake nasm
             elif command -v apk &> /dev/null
             then
               apk update
-              apk add cmake make g++ gcc yasm
+              apk add cmake make g++ gcc nasm
             fi
 
             cd /work
@@ -245,7 +244,7 @@ jobs:
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y yasm
+          sudo apt-get install -y nasm
       - name: Prepare build
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
