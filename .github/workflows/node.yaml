@@ -49,27 +49,27 @@ jobs:
             arch: x64
             is-native: true
             docker-arch: linux/amd64
-            docker-image: node:18-buster
+            docker-image: node:22-bullseye
             extra-copy-args: --extraFiles libturbojpeg.so.0
           # linux-libc
           - os: ubuntu-24.04-arm
             arch: arm64
             is-native: true
             docker-arch: linux/arm64
-            docker-image: node:18-buster
+            docker-image: node:22-bullseye
             extra-copy-args: --extraFiles libturbojpeg.so.0
           - os: ubuntu-24.04-arm
             arch: arm
             is-native: false
             docker-arch: linux/arm/v7
-            docker-image: node:18-buster
+            docker-image: node:22-bullseye
             extra-copy-args: --extraFiles libturbojpeg.so.0
           # linux-musl
           - os: ubuntu-latest
             arch: x64
             is-native: false
             docker-arch: linux/amd64
-            docker-image: node:18-alpine
+            docker-image: node:22-alpine
             libc: musl
             extra-copy-args: --extraFiles libturbojpeg.so.0
 
@@ -95,10 +95,10 @@ jobs:
         run: |
           brew install nasm
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: 18.x
+          node-version: 22.x
 
       - name: rebuild
         if: ${{ !matrix.docker-arch }}
@@ -147,13 +147,13 @@ jobs:
           run: |
             if command -v apt-get &> /dev/null
             then
-              # rewrite buster sources to archive mirrors
+              # rewrite bullseye sources to archive mirrors
               sed -i -E 's#https?://(deb|deb.debian).debian.org/debian#http://archive.debian.org/debian#g' /etc/apt/sources.list || true
               sed -i -E 's#https?://security.debian.org#http://archive.debian.org/debian-security#g' /etc/apt/sources.list || true
 
-              echo "deb http://archive.debian.org/debian buster-backports main contrib non-free" | tee -a /etc/apt/sources.list.d/backports.list
+              echo "deb http://archive.debian.org/debian bullseye-backports main contrib non-free" | tee -a /etc/apt/sources.list.d/backports.list
               apt-get update
-              apt-get install -y cmake/buster-backports yasm
+              apt-get install -y cmake/bullseye-backports yasm
             elif command -v apk &> /dev/null
             then
               apk update
@@ -219,17 +219,11 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Checkout submodules
-        shell: bash
-        run: |
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
-          node-version: 18.x
+          node-version: 22.x
       - name: Check release is desired
         id: do-publish
         run: |
