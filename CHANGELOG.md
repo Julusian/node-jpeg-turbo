@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.0.0](https://github.com/Julusian/node-jpeg-turbo/compare/v2.3.0...v3.0.0) (2026-01-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* update minimum nodejs to 22.14
+
+### Features
+
+* swap yasm for nasm ([502c3b6](https://github.com/Julusian/node-jpeg-turbo/commit/502c3b6940726985c26540925b9799b234484e4d))
+* update libjpeg-turbo ([58b3915](https://github.com/Julusian/node-jpeg-turbo/commit/58b391566b13b024fa203bfaaeac6a0a9004ea85))
+* update minimum nodejs to 22.14 ([a884350](https://github.com/Julusian/node-jpeg-turbo/commit/a8843508c23f178f666ec36a98e0eeff11a64d7e))
+
+
+### Bug Fixes
+
+* require simd during build ([8410f1d](https://github.com/Julusian/node-jpeg-turbo/commit/8410f1decc03eeb81a9dd71ca7d75d26bdfb9aa1))
+
 ## [2.3.0](https://github.com/Julusian/node-jpeg-turbo/compare/v2.2.0...v2.3.0) (2025-09-16)
 
 
