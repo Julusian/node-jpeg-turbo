@@ -14,7 +14,7 @@ on:
       - .release-please-manifest.json
 
 env:
-  NAPI_VERSION: 7
+  NAPI_VERSION: 10
   BINDING_NAME: jpeg-turbo
   MACOSX_DEPLOYMENT_TARGET: "10.13"
 

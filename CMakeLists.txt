@@ -9,7 +9,7 @@ include(ExternalProject)
 project (jpeg-turbo)
 
 # define NPI_VERSION
-add_definitions(-DNAPI_VERSION=7)
+add_definitions(-DNAPI_VERSION=10)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -75,6 +75,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${JPEG_INCLUDE_DIR})
 target_link_directories(${PROJECT_NAME} PRIVATE ${JPEG_LIB_DIR})
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${JPEG_LIB})
 add_dependencies(${PROJECT_NAME} libjpeg-turbo)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
   # Generate node.lib

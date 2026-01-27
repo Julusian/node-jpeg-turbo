@@ -1,4 +1,4 @@
 module.exports = {
-  name: 'jpeg-turbo',
-  napi_versions: [7],
-}
+  name: "jpeg-turbo",
+  napi_versions: [10],
+};
