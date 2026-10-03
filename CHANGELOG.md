@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.0](https://github.com/Julusian/node-jpeg-turbo/compare/v3.0.1...v3.1.0) (2026-10-03)
+
+
+### Features
+
+* fetch cmake-js on demand instead of depending on it ([#65](https://github.com/Julusian/node-jpeg-turbo/issues/65)) ([04240b2](https://github.com/Julusian/node-jpeg-turbo/commit/04240b2a49d0bcca53665e6d2d1e482e1fecddec))
+
+
+### Bug Fixes
+
+* update jpeg-turbo to v3.1.4.1 ([d9761ad](https://github.com/Julusian/node-jpeg-turbo/commit/d9761ad93b4153186312151d255a2d2082ac2a21))
+
 ## [3.0.1](https://github.com/Julusian/node-jpeg-turbo/compare/v3.0.0...v3.0.1) (2026-01-27)
 
 
