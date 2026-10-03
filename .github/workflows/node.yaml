@@ -141,12 +141,16 @@ jobs:
           run: |
             if command -v apt-get &> /dev/null
             then
-              # # rewrite bullseye sources to archive mirrors
-              # sed -i -E 's#https?://(deb|deb.debian).debian.org/debian#http://archive.debian.org/debian#g' /etc/apt/sources.list || true
-              # sed -i -E 's#https?://security.debian.org#http://archive.debian.org/debian-security#g' /etc/apt/sources.list || true
+              if ! (apt-get update && apt-get install -y cmake nasm)
+              then
+                # bullseye is end of life and is being moved to the archive mirrors
+                echo "apt-get failed, retrying with archive.debian.org"
+                sed -i -E 's#https?://(deb|deb.debian).debian.org/debian#http://archive.debian.org/debian#g' /etc/apt/sources.list || true
+                sed -i -E 's#https?://security.debian.org#http://archive.debian.org/debian-security#g' /etc/apt/sources.list || true
 
-              apt-get update
-              apt-get install -y cmake nasm
+                apt-get -o Acquire::Check-Valid-Until=false update
+                apt-get install -y cmake nasm
+              fi
             elif command -v apk &> /dev/null
             then
               apk update
