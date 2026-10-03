@@ -23,17 +23,17 @@
   "main": "./index.js",
   "types": "./module.d.ts",
   "dependencies": {
-    "cmake-js": "^8.0.0",
     "node-addon-api": "^8.5.0",
     "pkg-prebuilds": "^1.0.0"
   },
   "scripts": {
-    "install": "pkg-prebuilds-verify ./binding-options.js || cmake-js compile --target jpeg-turbo",
+    "install": "pkg-prebuilds-verify ./binding-options.js || node ./scripts/build-from-source.js",
     "build": "cmake-js build --target jpeg-turbo",
     "rebuild": "cmake-js rebuild --target jpeg-turbo",
     "test": "jest"
   },
   "devDependencies": {
+    "cmake-js": "^8.0.0",
     "jest": "^30.2.0"
   },
   "files": [
@@ -42,6 +42,7 @@
     "/CMakeLists.txt",
     "/index.js",
     "/binding-options.js",
+    "/scripts/build-from-source.js",
     "/module.d.ts"
   ],
   "packageManager": "yarn@4.12.0"

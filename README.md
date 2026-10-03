@@ -19,6 +19,8 @@ We provide prebuilds for some platforms, meaning that you should not have to com
 
 ### If you must build from source
 
+When no prebuild is available for your platform (or `npm_config_build_from_source` is set), the package is compiled during install using [cmake-js](https://github.com/cmake-js/cmake-js). cmake-js is not a dependency of this package; if it is not already installed, it is fetched on demand using the package manager running the install (`npm exec`, `pnpm dlx` or `yarn dlx`). If that is not possible in your environment (eg, offline), install `cmake-js` alongside this package and it will be used instead.
+
 First, if you're building from the repo, make sure to init and update submodules or you'll get confusing errors about missing targets when building. We include `libjpeg-turbo` as a submodule.
 
 ```bash
