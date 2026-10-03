@@ -87,6 +87,13 @@ function isMusl() {
   }
 }
 
+if (process.env.JPEG_TURBO_SKIP_BUILD) {
+  console.log(
+    "@julusian/jpeg-turbo: JPEG_TURBO_SKIP_BUILD is set, skipping build from source. A binary must be provided before this package can be used."
+  );
+  process.exit(0);
+}
+
 const localCmakeJs = findLocalCmakeJs();
 const result = localCmakeJs
   ? run(process.execPath, [localCmakeJs, ...CMAKE_JS_ARGS], false)

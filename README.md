@@ -21,6 +21,13 @@ We provide prebuilds for some platforms, meaning that you should not have to com
 
 When no prebuild is available for your platform (or `npm_config_build_from_source` is set), the package is compiled during install using [cmake-js](https://github.com/cmake-js/cmake-js). cmake-js is not a dependency of this package; if it is not already installed, it is fetched on demand using the package manager running the install (`npm exec`, `pnpm dlx` or `yarn dlx`). If that is not possible in your environment (eg, offline), install `cmake-js` alongside this package and it will be used instead.
 
+To skip the build from source entirely (for example, to provide your own binaries), set `JPEG_TURBO_SKIP_BUILD=1` when installing. The install will then succeed without a binary, and you will need to place one where it will be found before using the package. Either:
+
+- `build/Release/jpeg-turbo.node`, or
+- `prebuilds/jpeg-turbo-<platform>-<arch>[-musl]/node-napi-v10.node`, eg `prebuilds/jpeg-turbo-linux-riscv64/node-napi-v10.node`
+
+On Linux the binary is linked against a shared `libturbojpeg.so.0`, which should be placed in the same directory.
+
 First, if you're building from the repo, make sure to init and update submodules or you'll get confusing errors about missing targets when building. We include `libjpeg-turbo` as a submodule.
 
 ```bash
