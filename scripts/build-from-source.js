@@ -6,10 +6,13 @@
 const { spawnSync } = require("child_process");
 const path = require("path");
 
-const CMAKE_JS_RANGE = "^8.0.0";
-const CMAKE_JS_ARGS = ["compile", "--target", "jpeg-turbo"];
-
 const packageDir = path.join(__dirname, "..");
+
+// Use the same cmake-js version the repo builds with.
+// devDependencies are preserved in the published package.json
+const CMAKE_JS_RANGE = require(path.join(packageDir, "package.json"))
+  .devDependencies["cmake-js"];
+const CMAKE_JS_ARGS = ["compile", "--target", "jpeg-turbo"];
 const isWindows = process.platform === "win32";
 
 function run(command, args, useShell) {
