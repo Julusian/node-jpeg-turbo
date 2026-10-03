@@ -74,7 +74,7 @@ jobs:
             extra-copy-args: --extraFiles libturbojpeg.so.0
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Windows dependencies
         if: runner.os == 'Windows'
@@ -209,7 +209,7 @@ jobs:
     if: contains(github.ref, 'refs/tags/')
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
